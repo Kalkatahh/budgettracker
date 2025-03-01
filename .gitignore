@@ -1,23 +1,62 @@
-/.phpunit.cache
-/node_modules
-/public/build
-/public/hot
-/public/storage
-/storage/*.key
-/storage/pail
-/vendor
+# Laravel-specific ignores
+/vendor/
+storage/*.key
+storage/app/*
+storage/framework/*
+storage/logs/*
+storage/database/*.sqlite
+storage/temp/*
 .env
 .env.backup
 .env.production
-.phpactor.json
+.env.staging
 .phpunit.result.cache
-Homestead.json
-Homestead.yaml
-auth.json
+composer.phar
 npm-debug.log
 yarn-error.log
-/.fleet
-/.idea
-/.nova
-/.vscode
-/.zed
+
+# Node.js/Vue.js-specific ignores
+node_modules/
+dist/
+build/
+*.log
+*.map
+.eslintcache
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+
+# IDEs and Editors
+.idea/
+.vscode/
+*.sublime-*
+*.swp
+*.swo
+*.DS_Store
+
+# Temporary files
+*.tmp
+*.bak
+*.backup
+
+# Compiled files
+*.pyc
+*.class
+
+# OS-generated files
+Thumbs.db
+Desktop.ini
+
+# Frontend build output (Vue)
+public/build/*
+!public/build/.gitkeep
+
+# Laravel compiled views
+bootstrap/cache/*.php
+
+# Laravel lock files
+composer.lock
+package-lock.json  # Optional: Keep this if you want to lock frontend dependencies for reproducibility
