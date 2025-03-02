@@ -2,7 +2,7 @@
     <div class="min-h-screen bg-gray-100">
         <nav class="bg-white shadow-md p-4">
             <div class="max-w-4xl mx-auto flex justify-between items-center">
-                <router-link to="/dashboard" class="text-blue-500 hover:text-blue-700">Dashboard</router-link>
+                <span class="text-lg font-bold">Receipt Uploader</span>
                 <div class="space-x-4">
                     <div v-if="!isLoggedIn">
                         <router-link to="/login" class="text-blue-500 hover:text-blue-700">Login</router-link>
@@ -10,13 +10,23 @@
                     </div>
                     <div v-else class="flex items-center space-x-4">
                         <span class="text-gray-700">Welcome, {{ username || 'User' }}!</span>
+                        <router-link to="/dashboard" class="text-blue-500 hover:text-blue-700">Dashboard</router-link>
+                        <router-link to="/receipts" class="text-blue-500 hover:text-blue-700">Receipts</router-link>
                         <button @click="logout" class="text-red-500 hover:text-red-700">Logout</button>
                     </div>
                 </div>
             </div>
         </nav>
         <main class="max-w-4xl mx-auto p-6">
-            <router-view />
+            <router-view v-slot="{ Component }">
+                <transition name="fade" mode="out-in">
+                    <component :is="Component" />
+                </transition>
+            </router-view>
+            <div v-if="successMessage" class="fixed top-4 right-4 bg-green-500 text-white p-4 rounded shadow-md">
+                {{ successMessage }}
+                <button @click="clearSuccess" class="ml-4 text-white hover:text-gray-200">&times;</button>
+            </div>
         </main>
     </div>
 </template>
@@ -27,7 +37,8 @@ import axios from 'axios';
 export default {
     data() {
         return {
-            username: '', // Store the username of the logged-in user
+            username: '',
+            successMessage: '', // Store the success message from Laravel
         };
     },
     computed: {
@@ -74,10 +85,20 @@ export default {
                 this.username = ''; // Clear username on failure to prevent stale data
             }
         },
+        clearSuccess() {
+            this.successMessage = '';
+        },
     },
     created() {
         if (this.isLoggedIn) {
             this.fetchUser();
+        }
+        // Check for success message from Laravel on page load
+        const success = this.$route.query.success;
+        if (success) {
+            this.successMessage = success;
+            // Remove the query parameter from the URL
+            this.$router.replace({ query: {} });
         }
     },
     watch: {
@@ -92,3 +113,15 @@ export default {
     },
 };
 </script>
+
+<style>
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.5s;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+}
+</style>

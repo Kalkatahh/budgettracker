@@ -14,6 +14,10 @@ class Receipt extends Model
         'original_filename',
         'renamed_filename',
         'google_drive_link',
+        'date', // Add new columns for OCR data
+        'store',
+        'payment_method',
+        'cost',
     ];
 
     /**
