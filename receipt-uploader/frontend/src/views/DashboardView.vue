@@ -4,20 +4,17 @@
         <div class="space-y-4">
             <div>
                 <label class="block text-sm font-medium text-gray-700">Upload Receipt</label>
-                <input type="file" @change="previewFile" ref="fileInput" accept="image/jpeg,image/png,application/pdf"
+                <input type="file" @change="previewFile" ref="fileInput" accept="image/jpeg,image/png"
                     class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
-            </div>
-            <div v-if="preview" class="mt-4">
-                <p class="text-sm text-gray-600">Preview:</p>
-                <img v-if="previewType === 'image'" :src="preview" alt="Receipt Preview"
-                    class="max-w-full rounded-lg shadow-md" />
-                <p v-else class="text-gray-500">PDF preview not available. Please upload to proceed.</p>
             </div>
             <button @click="upload" :disabled="!hasValidFile"
                 class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600 transition disabled:bg-gray-400 disabled:cursor-not-allowed">
                 Upload Receipt
             </button>
-            <p v-if="errorMessage" class="mt-2 text-red-500 text-center">{{ errorMessage }}</p>
+            <div v-if="preview" class="mt-4">
+                <p class="text-sm text-gray-600">Preview:</p>
+                <img :src="preview" alt="Receipt Preview" class="max-w-full rounded-lg shadow-md" />
+            </div>
         </div>
     </div>
 </template>
@@ -29,41 +26,35 @@ export default {
     data() {
         return {
             preview: null,
-            previewType: 'image', // Default to image, update if PDF
             errorMessage: '',
             selectedFile: null, // Track the selected file
         };
     },
     computed: {
         hasValidFile() {
+            console.log('hasValidFile:', !!this.selectedFile && (this.selectedFile.type === 'image/jpeg' ||
+                this.selectedFile.type === 'image/png'));
             return !!this.selectedFile && (this.selectedFile.type === 'image/jpeg' ||
-                this.selectedFile.type === 'image/png' ||
-                this.selectedFile.type === 'application/pdf');
+                this.selectedFile.type === 'image/png');
         },
     },
     methods: {
         previewFile(event) {
             const file = event.target.files[0];
+            console.log('Selected file:', file);
             if (!file) {
                 this.selectedFile = null;
                 this.preview = null;
-                this.previewType = 'image';
                 this.errorMessage = '';
                 return;
             }
 
-            if (file.type === 'application/pdf') {
-                this.previewType = 'pdf';
-                this.preview = null; // No preview for PDF, just proceed
-                this.errorMessage = '';
-            } else if (file.type === 'image/jpeg' || file.type === 'image/png') {
-                this.previewType = 'image';
+            if (file.type === 'image/jpeg' || file.type === 'image/png') {
                 this.preview = URL.createObjectURL(file);
                 this.errorMessage = '';
             } else {
-                this.errorMessage = 'Please upload a JPG, PNG, or PDF file.';
+                this.errorMessage = 'Please upload a JPG or PNG file.';
                 this.preview = null;
-                this.previewType = 'image';
                 this.selectedFile = null;
                 return;
             }
@@ -81,6 +72,13 @@ export default {
             const formData = new FormData();
             formData.append('receipt', this.selectedFile);
 
+            console.log('Uploading file:', {
+                token,
+                fileName: this.selectedFile?.name,
+                fileType: this.selectedFile?.type,
+                formData,
+            });
+
             try {
                 const response = await axios.post('http://127.0.0.1:8000/api/receipts', formData, {
                     headers: {
@@ -91,12 +89,32 @@ export default {
                 });
                 this.errorMessage = 'Receipt uploaded successfully!';
                 this.preview = null;
-                this.previewType = 'image';
                 this.selectedFile = null;
                 this.$refs.fileInput.value = '';
+                console.log('Upload response:', response.data);
             } catch (error) {
                 this.errorMessage = `Upload failed: ${error.response?.data?.message || error.message}`;
                 console.error('Upload error:', error.response);
+            }
+        },
+        async logout() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                this.$router.push('/login');
+                return;
+            }
+
+            try {
+                await axios.post('http://127.0.0.1:8000/api/logout', {}, {
+                    headers: { Authorization: `Bearer ${token}` },
+                    withCredentials: true,
+                });
+                localStorage.removeItem('token');
+                this.$router.push('/login');
+                this.errorMessage = 'Logged out successfully.';
+            } catch (error) {
+                this.errorMessage = `Logout failed: ${error.response?.data?.message || error.message}`;
+                console.error('Logout error:', error.response);
             }
         },
     },

@@ -2,7 +2,7 @@
     <div class="min-h-screen bg-gray-100">
         <nav class="bg-white shadow-md p-4">
             <div class="max-w-4xl mx-auto flex justify-between items-center">
-                <span class="text-lg font-bold">Receipt Uploader</span>
+                <router-link to="/dashboard" class="text-blue-500 hover:text-blue-700">Dashboard</router-link>
                 <div class="space-x-4">
                     <div v-if="!isLoggedIn">
                         <router-link to="/login" class="text-blue-500 hover:text-blue-700">Login</router-link>
@@ -10,7 +10,6 @@
                     </div>
                     <div v-else class="flex items-center space-x-4">
                         <span class="text-gray-700">Welcome, {{ username || 'User' }}!</span>
-                        <router-link to="/dashboard" class="text-blue-500 hover:text-blue-700">Dashboard</router-link>
                         <button @click="logout" class="text-red-500 hover:text-red-700">Logout</button>
                     </div>
                 </div>
