@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use thiagoalessio\TesseractOCR\TesseractOCR;
 use Google\Client;
 
@@ -10,6 +11,12 @@ class ReceiptController extends Controller
 {
     public function store(Request $request)
     {
+        \Log::info('Receipt upload request:', [
+            'user' => auth()->user(),
+            'headers' => $request->header(),
+            'files' => $request->files->all(),
+        ]);
+
         $request->validate(['receipt' => 'required|file|mimes:jpg,png,pdf']);
         $file = $request->file('receipt');
         $path = $file->store('temp');

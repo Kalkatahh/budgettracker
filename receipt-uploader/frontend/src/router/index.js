@@ -15,4 +15,16 @@ const router = createRouter({
     routes,
 });
 
+// Navigation guard to protect routes
+router.beforeEach((to, from, next) => {
+    const isLoggedIn = !!localStorage.getItem('token');
+  
+    if (to.path === '/dashboard' && !isLoggedIn) {
+      // Redirect to login if trying to access dashboard without being logged in
+      next('/login');
+    } else {
+      next(); // Proceed to the requested route
+    }
+  });
+
 export default router;

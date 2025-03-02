@@ -1,50 +1,90 @@
 <template>
-    <div id="app">
-        <nav>
-            <router-link to="/login">Login</router-link> |
-            <router-link to="/register">Register</router-link> |
-            <router-link to="/dashboard" v-if="isLoggedIn">Dashboard</router-link>
-            <button @click="logout" v-if="isLoggedIn">Logout</button>
+    <div class="min-h-screen bg-gray-100">
+        <nav class="bg-white shadow-md p-4">
+            <div class="max-w-4xl mx-auto flex justify-between items-center">
+                <span class="text-lg font-bold">Receipt Uploader</span>
+                <div class="space-x-4">
+                    <div v-if="!isLoggedIn">
+                        <router-link to="/login" class="text-blue-500 hover:text-blue-700">Login</router-link>
+                        <router-link to="/register" class="text-blue-500 hover:text-blue-700">Register</router-link>
+                    </div>
+                    <div v-else class="flex items-center space-x-4">
+                        <span class="text-gray-700">Welcome, {{ username }}!</span>
+                        <router-link to="/dashboard" class="text-blue-500 hover:text-blue-700">Dashboard</router-link>
+                        <button @click="logout" class="text-red-500 hover:text-red-700">Logout</button>
+                    </div>
+                </div>
+            </div>
         </nav>
-        <router-view />
+        <main class="max-w-4xl mx-auto p-6">
+            <router-view />
+        </main>
     </div>
 </template>
 
 <script>
-import axios from "axios";
+import axios from 'axios';
 
 export default {
+    data() {
+        return {
+            username: '',
+        };
+    },
     computed: {
         isLoggedIn() {
-            return !!localStorage.getItem("token");
+            return !!localStorage.getItem('token');
         },
     },
     methods: {
         async logout() {
-            await axios.post(
-                "http://127.0.0.1:8000/api/logout",
-                {},
-                {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem(
-                            "token"
-                        )}`,
-                    },
-                }
-            );
-            localStorage.removeItem("token");
-            this.$router.push("/login");
+            const token = localStorage.getItem('token');
+            if (!token) {
+                this.$router.push('/login');
+                return;
+            }
+
+            try {
+                await axios.post('http://127.0.0.1:8000/api/logout', {}, {
+                    headers: { Authorization: `Bearer ${token}` },
+                    withCredentials: true,
+                });
+                localStorage.removeItem('token');
+                this.username = '';
+                this.$router.push('/login');
+            } catch (error) {
+                alert(`Logout failed: ${error.response?.data?.message || error.message}`);
+                console.error('Logout error:', error.response);
+            }
+        },
+        async fetchUser() {
+            const token = localStorage.getItem('token');
+            if (!token) return;
+
+            try {
+                const response = await axios.get('http://127.0.0.1:8000/api/user', {
+                    headers: { Authorization: `Bearer ${token}` },
+                    withCredentials: true,
+                });
+                this.username = response.data.name;
+            } catch (error) {
+                console.error('Failed to fetch user:', error.response);
+            }
+        },
+    },
+    created() {
+        if (this.isLoggedIn) {
+            this.fetchUser();
+        }
+    },
+    watch: {
+        isLoggedIn(newValue) {
+            if (newValue) {
+                this.fetchUser();
+            } else {
+                this.username = '';
+            }
         },
     },
 };
 </script>
-
-<style>
-nav {
-    padding: 10px;
-}
-
-nav a {
-    margin-right: 10px;
-}
-</style>

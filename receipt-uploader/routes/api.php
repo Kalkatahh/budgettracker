@@ -11,4 +11,7 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [\App\Http\Controllers\Auth\AuthenticatedSessionController::class, 'destroy']);
     Route::post('/receipts', [\App\Http\Controllers\ReceiptController::class, 'store']);
+    Route::get('/user', function (Request $request) {
+        return $request->user();
+    });
 });
