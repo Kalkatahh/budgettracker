@@ -13,12 +13,9 @@
                     class="max-w-full rounded-lg shadow-md" />
                 <p v-else class="text-gray-500">PDF preview not available. Please upload to proceed.</p>
             </div>
-            <button @click="upload" :disabled="!preview"
+            <button @click="upload" :disabled="!hasValidFile"
                 class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600 transition disabled:bg-gray-400 disabled:cursor-not-allowed">
                 Upload Receipt
-            </button>
-            <button @click="logout" class="w-full bg-red-500 text-white p-2 rounded hover:bg-red-600 transition mt-2">
-                Logout
             </button>
             <p v-if="errorMessage" class="mt-2 text-red-500 text-center">{{ errorMessage }}</p>
         </div>
@@ -100,26 +97,6 @@ export default {
             } catch (error) {
                 this.errorMessage = `Upload failed: ${error.response?.data?.message || error.message}`;
                 console.error('Upload error:', error.response);
-            }
-        },
-        async logout() {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                this.$router.push('/login');
-                return;
-            }
-
-            try {
-                await axios.post('http://127.0.0.1:8000/api/logout', {}, {
-                    headers: { Authorization: `Bearer ${token}` },
-                    withCredentials: true,
-                });
-                localStorage.removeItem('token');
-                this.$router.push('/login');
-                this.errorMessage = 'Logged out successfully.';
-            } catch (error) {
-                this.errorMessage = `Logout failed: ${error.response?.data?.message || error.message}`;
-                console.error('Logout error:', error.response);
             }
         },
     },

@@ -9,7 +9,7 @@
                         <router-link to="/register" class="text-blue-500 hover:text-blue-700">Register</router-link>
                     </div>
                     <div v-else class="flex items-center space-x-4">
-                        <span class="text-gray-700">Welcome, {{ username }}!</span>
+                        <span class="text-gray-700">Welcome, {{ username || 'User' }}!</span>
                         <router-link to="/dashboard" class="text-blue-500 hover:text-blue-700">Dashboard</router-link>
                         <button @click="logout" class="text-red-500 hover:text-red-700">Logout</button>
                     </div>
@@ -28,12 +28,14 @@ import axios from 'axios';
 export default {
     data() {
         return {
-            username: '',
+            username: '', // Store the username of the logged-in user
         };
     },
     computed: {
         isLoggedIn() {
-            return !!localStorage.getItem('token');
+            const token = localStorage.getItem('token');
+            console.log('Checking login status, token:', token); // Debug log
+            return !!token;
         },
     },
     methods: {
@@ -66,9 +68,11 @@ export default {
                     headers: { Authorization: `Bearer ${token}` },
                     withCredentials: true,
                 });
-                this.username = response.data.name;
+                this.username = response.data.name; // Assuming the response includes the user's name
+                console.log('Fetched username:', this.username); // Debug log
             } catch (error) {
                 console.error('Failed to fetch user:', error.response);
+                this.username = ''; // Clear username on failure to prevent stale data
             }
         },
     },
@@ -79,6 +83,7 @@ export default {
     },
     watch: {
         isLoggedIn(newValue) {
+            console.log('Login status changed to:', newValue); // Debug log
             if (newValue) {
                 this.fetchUser();
             } else {
