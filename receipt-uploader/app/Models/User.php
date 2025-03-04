@@ -23,8 +23,12 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'is_premium',
+        'google_drive_refresh_token',
+        'google_drive_access_token',
+        'google_drive_token_expires_at',
     ];
-
+    
     /**
      * The attributes that should be hidden for serialization.
      *
@@ -33,21 +37,20 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'google_drive_refresh_token',
+        'google_drive_access_token',
     ];
-
     /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
      */
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
-    }
-
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+        'is_premium' => 'boolean',
+        'google_drive_token_expires_at' => 'datetime',
+    ];
     /**
      * Get the receipts for the user.
      */
